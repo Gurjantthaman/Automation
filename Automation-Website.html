@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Automation Clothing Store</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0b1220;
+    color:white;
+}
+
+/* HEADER */
+header{
+    padding:20px;
+    text-align:center;
+    background:#111827;
+}
+
+header h1{
+    margin:0;
+}
+
+/* HERO */
+.hero{
+    text-align:center;
+    padding:30px;
+}
+
+.hero p{
+    opacity:0.7;
+}
+
+/* LAYOUT */
+.main{
+    display:flex;
+    gap:20px;
+    padding:20px;
+}
+
+/* PRODUCTS */
+.products{
+    flex:3;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:#111827;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 10px 25px rgba(0,0,0,0.4);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:scale(1.05);
+}
+
+.card img{
+    width:100%;
+    height:220px;
+    object-fit:cover;
+}
+
+.card-content{
+    padding:12px;
+}
+
+button{
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:6px;
+    background:#3b82f6;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#2563eb;
+}
+
+/* RIGHT SIDE FORM */
+.sidebar{
+    flex:1;
+    background:#111827;
+    padding:15px;
+    border-radius:12px;
+    height:fit-content;
+    position:sticky;
+    top:20px;
+}
+
+.sidebar h3{
+    margin-top:0;
+}
+
+input, textarea{
+    width:100%;
+    padding:8px;
+    margin:6px 0;
+    border:none;
+    border-radius:6px;
+}
+
+textarea{
+    height:80px;
+    resize:none;
+}
+
+/* SIGNUP MODAL */
+.modal{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.7);
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-content{
+    background:#111827;
+    padding:20px;
+    border-radius:10px;
+    width:300px;
+}
+
+.show{
+    display:flex;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Automation Clothing Store</h1>
+<p>n8n Workflow Demo: Signup | Orders | Queries</p>
+<button onclick="openModal()">Sign Up</button>
+</header>
+
+<div class="hero">
+<h2>Modern Clothing Collection</h2>
+<p>Click actions to trigger automation workflows in n8n</p>
+</div>
+
+<div class="main">
+
+<!-- PRODUCTS -->
+<div class="products">
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1520975916090-3105956dac38">
+<div class="card-content">
+<h3>Jacket</h3>
+<button onclick="order('Jacket')">Order</button>
+</div>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1542272604-787c3835535d">
+<div class="card-content">
+<h3>Jeans</h3>
+<button onclick="order('Jeans')">Order</button>
+</div>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2">
+<div class="card-content">
+<h3>Hoodie</h3>
+<button onclick="order('Hoodie')">Order</button>
+</div>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1600180758890-6b94519a8ba6">
+<div class="card-content">
+<h3>T-Shirt</h3>
+<button onclick="order('T-Shirt')">Order</button>
+</div>
+</div>
+
+</div>
+
+<!-- SIDEBAR QUERY FORM -->
+<div class="sidebar">
+<h3>Contact / Query</h3>
+
+<input id="q_name" placeholder="Name">
+<input id="q_email" placeholder="Email">
+<input id="q_subject" placeholder="Subject">
+<textarea id="q_message" placeholder="Your message"></textarea>
+<button onclick="sendQuery()">Send Query</button>
+
+</div>
+
+</div>
+
+<!-- SIGNUP MODAL -->
+<div class="modal" id="modal">
+<div class="modal-content">
+<h3>Sign Up</h3>
+
+<input id="s_name" placeholder="Name">
+<input id="s_email" placeholder="Email">
+<button onclick="signup()">Create Account</button>
+<button onclick="closeModal()" style="background:red;margin-top:10px;">Close</button>
+</div>
+</div>
+
+<script>
+
+    let user = null;
+    
+    /* -------------------------
+       MODAL CONTROLS
+    --------------------------*/
+    function openModal(){
+        document.getElementById("modal").classList.add("show");
+    }
+    
+    function closeModal(){
+        document.getElementById("modal").classList.remove("show");
+    }
+    
+    /* -------------------------
+       SIGNUP → N8N (WELCOME EMAIL)
+    --------------------------*/
+    function signup(){
+    
+        let name = document.getElementById("s_name").value;
+        let email = document.getElementById("s_email").value;
+    
+        if(!name || !email){
+            alert("Please fill all fields");
+            return;
+        }
+    
+        user = {name,email};
+    
+        // CLOSE MODAL
+        closeModal();
+    
+        alert("Signup successful!");
+    
+        // SEND TO N8N (WELCOME EMAIL TRIGGER)
+        fetch("http://localhost:5678/webhook/Welcome-email",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                type:"signup",
+                name:name,
+                email:email
+            })
+        });
+    
+    }
+    
+    /* -------------------------
+       ORDER → N8N (ORDER EMAIL)
+    --------------------------*/
+    function order(product){
+    
+        if(!user){
+            alert("Please sign up first");
+            openModal();
+            return;
+        }
+    
+        fetch("http://localhost:5678/webhook/Order-Placed",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                type:"order",
+                name:user.name,
+                email:user.email,
+                product:product,
+                time:new Date().toISOString()
+            })
+        });
+    
+        alert("Order placed for " + product + " (Automation Triggered)");
+    }
+    
+    /* -------------------------
+       QUERY FORM → N8N (CONTACT EMAIL)
+    --------------------------*/
+    function sendQuery(){
+    
+        let name = document.getElementById("q_name").value;
+        let email = document.getElementById("q_email").value;
+        let subject = document.getElementById("q_subject").value;
+        let message = document.getElementById("q_message").value;
+    
+        if(!name || !email || !subject || !message){
+            alert("Fill all fields");
+            return;
+        }
+    
+        fetch("http://localhost:5678/webhook/Queries",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                type:"query",
+                name:name,
+                email:email,
+                subject:subject,
+                message:message
+            })
+        });
+    
+        alert("Query sent successfully!");
+    
+        // CLEAR FORM
+        document.getElementById("q_name").value = "";
+        document.getElementById("q_email").value = "";
+        document.getElementById("q_subject").value = "";
+        document.getElementById("q_message").value = "";
+    }
+    
+    </script>
+
+</body>
+</html>
